@@ -1,0 +1,43 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define DISK_SIZE 32
+
+int bitmap[DISK_SIZE];
+
+int find_run(int k) {
+    int count = 0;
+    for (int i = 0; i < DISK_SIZE; ++i) {
+        if (bitmap[i] == 0) count++; else count = 0;
+        if (count == k) return i - k + 1;
+    }
+    return -1;
+}
+
+int allocate(int k) {
+    int start = find_run(k);
+    if (start < 0) return -1;
+    for (int i = start; i < start + k; ++i) bitmap[i] = 1;
+    return start;
+}
+
+void deallocate(int start, int k) {
+    for (int i = start; i < start + k; ++i) bitmap[i] = 0;
+}
+
+void print_disk() {
+    for (int i = 0; i < DISK_SIZE; ++i) printf("%d", bitmap[i]);
+    printf("\n");
+}
+
+int main() {
+    memset(bitmap, 0, sizeof(bitmap));
+    int a = allocate(3);
+    print_disk();
+    int b = allocate(5);
+    print_disk();
+    deallocate(a,3);
+    print_disk();
+    return 0;
+}
