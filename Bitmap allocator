@@ -1,0 +1,50 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define DISK_BLOCKS 32
+
+static int disk_bits[DISK_BLOCKS];
+
+int find_first_run(int need) {
+    int run = 0;
+    for (int i = 0; i < DISK_BLOCKS; ++i) {
+        if (disk_bits[i] == 0) run++; else run = 0;
+        if (run == need) return i - need + 1;
+    }
+    return -1;
+}
+
+int bitmap_alloc(int size) {
+    if (size <= 0 || size > DISK_BLOCKS) return -1;
+    int start = find_first_run(size);
+    if (start == -1) return -1;
+    for (int j = start; j < start + size; ++j) disk_bits[j] = 1;
+    return start;
+}
+
+void bitmap_free(int start, int size) {
+    if (start < 0 || start + size > DISK_BLOCKS) return;
+    for (int j = start; j < start + size; ++j) disk_bits[j] = 0;
+}
+
+void print_map(void) {
+    for (int i = 0; i < DISK_BLOCKS; ++i) putchar(disk_bits[i] ? '1' : '0');
+    putchar('\n');
+}
+
+int main(void) {
+    memset(disk_bits, 0, sizeof(disk_bits));
+    printf("Initial: ");
+    print_map();
+    int s1 = bitmap_alloc(3);
+    printf("After alloc(3) start=%d: ", s1);
+    print_map();
+    int s2 = bitmap_alloc(5);
+    printf("After alloc(5) start=%d: ", s2);
+    print_map();
+    bitmap_free(s1, 3);
+    printf("After free(start=%d,size=3): ", s1);
+    print_map();
+    return 0;
+}
