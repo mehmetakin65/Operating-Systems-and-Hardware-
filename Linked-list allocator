@@ -1,0 +1,63 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TOTAL_BLOCKS 32
+
+static int next_block[TOTAL_BLOCKS];
+static int free_head_index;
+
+void initialize_free_blocks(void) {
+    for (int i = 0; i < TOTAL_BLOCKS - 1; ++i) next_block[i] = i + 1;
+    next_block[TOTAL_BLOCKS - 1] = -1;
+    free_head_index = 0;
+}
+
+int linked_alloc(int need, int out_indices[]) {
+    if (need <= 0) return 0;
+    int cur = free_head_index;
+    int allocated = 0;
+    int last_allocated = -1;
+    while (cur != -1 && allocated < need) {
+        out_indices[allocated++] = cur;
+        last_allocated = cur;
+        cur = next_block[cur];
+    }
+    if (allocated < need) return 0;
+    free_head_index = cur;
+    next_block[last_allocated] = -1;
+    return allocated;
+}
+
+void linked_free(int arr[], int count) {
+    for (int i = 0; i < count; ++i) {
+        int idx = arr[i];
+        next_block[idx] = free_head_index;
+        free_head_index = idx;
+    }
+}
+
+void print_free_list(void) {
+    int cur = free_head_index;
+    while (cur != -1) {
+        printf("%d ", cur);
+        cur = next_block[cur];
+    }
+    printf("\n");
+}
+
+int main(void) {
+    initialize_free_blocks();
+    printf("Initial free list: ");
+    print_free_list();
+    int allocated[16];
+    int got = linked_alloc(3, allocated);
+    printf("Allocated %d blocks: ", got);
+    for (int i = 0; i < got; ++i) printf("%d ", allocated[i]);
+    printf("\nFree list after allocation: ");
+    print_free_list();
+    linked_free(allocated, got);
+    printf("Free list after freeing: ");
+    print_free_list();
+    return 0;
+}
