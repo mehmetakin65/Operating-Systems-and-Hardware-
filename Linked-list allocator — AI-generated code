@@ -1,0 +1,57 @@
+/* AI-generated linked-list allocator (simple) */
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define DISK_SIZE 32
+
+int next_ptr[DISK_SIZE];
+int free_head;
+
+void init_free_list() {
+    for (int i = 0; i < DISK_SIZE-1; ++i) next_ptr[i] = i+1;
+    next_ptr[DISK_SIZE-1] = -1;
+    free_head = 0;
+}
+
+int allocate_blocks(int k, int out[]) {
+    if (free_head == -1) return -1;
+    int prev = -1;
+    int cur = free_head;
+    int count = 0;
+    int first = -1;
+    while (cur != -1 && count < k) {
+        if (first == -1) first = cur;
+        out[count++] = cur;
+        cur = next_ptr[cur];
+    }
+    if (count < k) return -1;
+    free_head = cur;
+    return first;
+}
+
+void free_chain(int arr[], int k) {
+    for (int i = 0; i < k; ++i) {
+        next_ptr[arr[i]] = free_head;
+        free_head = arr[i];
+    }
+}
+
+void print_free() {
+    int cur = free_head;
+    while (cur != -1) {
+        printf("%d ", cur);
+        cur = next_ptr[cur];
+    }
+    printf("\n");
+}
+
+int main() {
+    init_free_list();
+    int a[10];
+    int s = allocate_blocks(3,a);
+    print_free();
+    free_chain(a,3);
+    print_free();
+    return 0;
+}
